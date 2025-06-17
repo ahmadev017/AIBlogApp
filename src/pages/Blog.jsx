@@ -6,27 +6,56 @@ import { assets } from '../assets/assets'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import Moment from 'moment'
+import { useAppContext } from '../context/AppContext'
 const Blog = () => {
 const {id} = useParams()
  const  [data , setData] = useState(null)
  const [comments , setComments] = useState([])
-
+const {axios, toast} = useAppContext();
  const [name, setName] = useState('')
  const [content, setContent] = useState('')
 
-const fetchComments = async () =>{
-  setComments(comments_data)
-}
+const fetchComments = async () => {
+  try {
+    const { data } = await axios.get(`/api/blog/comments/${id}`);
+    if (data.success) {
+      setComments(data.comments);
+    } else {
+      toast.error(data.message);
+    }
+  } catch (error) {
+    toast.error(error.message);
+  }
+};
+
 
 
 const fetchBlogData = async ()=>{
- const data = blog_data.find(item=>item._id === id)
- setData(data)
+ try {
+  const {data} = await axios.get(`/api/blog/${id}`)
+  data.success ? setData(data.blog) : toast.error(data.message)
+ } catch (error) {
+  toast.error(error.message)
+ }
 }
 
-const addComment = async()=>{
-  e.preventDefault();
-}
+const addComment = async (e) => {
+  e.preventDefault(); // prevent reload
+  try {
+    const { data } = await axios.post('/api/blog/add-comment', { blogId: id, name, content });
+    if (data.success) {
+      toast.success(data.message);
+      setName('');
+      setContent('');
+      fetchComments(); // refresh comment list
+    } else {
+      toast.error(data.message);
+    }
+  } catch (error) {
+    toast.error(error.message);
+  }
+};
+
 
 useEffect(()=>{
    fetchBlogData();
@@ -39,7 +68,7 @@ useEffect(()=>{
        <Navbar/>
 
       <div className='text-center mt-20 text-gray-600'>
-        <p className='text-primary py-4 font-medium'>Published on {Moment(data.createdAt).format('MMM Do YYY')}</p>
+        <p className='text-primary py-4 font-medium'>Published on {Moment(data.createdAt).format('MMM Do YYYY')}</p>
         <h1 className='text-2xl sm:text-5xl font-semibold max-w-2xl mx-auto text-gray-800'>{data.title}</h1>
         <h2 className='my-5 max-w-lg truncate mx-auto'>{data.subtitle}</h2>
         <p className='inline-block py-1 px-4 rounded-full mb-6 border text-sm border-primary/35 bg-primary/5 font-medium text-primay'>Michael Brown</p>
@@ -56,11 +85,11 @@ useEffect(()=>{
           <div className='flex flex-col gap-4'>
              {comments.map((item, index)=>(
               <div className='relative bg-primary/2 border border-primary/5 max-w-xl rounded text-gray-600' key={index}>
-                  <div className='flex items-center gap-2 mb-2'>
+                  <div className='flex items-center gap-2 mb-2 mt-2 ml-2'>
                     <img src={assets.user_icon} className='w-6' alt="" />
                     <p className='font-medium'>{item.name}</p>
                   </div>
-                  <p className='text-sm max-w-md ml-8'>{item.content}</p>
+                  <p className='text-sm max-w-md ml-8 mb-2'>{item.content}</p>
                   <div className='absolute right-4 bottom-3 flex items-center gap-2 text-xs'> {Moment(item.createdAt).fromNow()} </div>
               </div>
              ))}

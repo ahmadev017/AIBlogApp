@@ -1,12 +1,27 @@
 import React, { useState } from 'react'
+import { useAppContext } from '../../context/AppContext'
 
 const Login = () => {
 
-  const [email, setEmail] = useState('')
-    const [password, setPassword] = useState('')
+
+  const {axios ,setToken, toast} =useAppContext()
+
+  const [email, setEmail] = useState('admin@quickblog.com')
+    const [password, setPassword] = useState('qwerty123')
 
 const handleSubmit = async (e)=>{
   e.preventDefault()
+  try {
+    const {data} = await axios.post('/api/admin/login', {email, password})
+    if(data.success){
+      setToken(data.token)
+      localStorage.setItem('token', data.token);axios.defaults.headers.common['Authorization'] = data.token;
+    }else{
+      toast.error(error.message)
+    }
+  } catch (error) {
+    toast.error(error.message)
+  }
 }
 
 
