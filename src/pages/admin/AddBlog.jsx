@@ -17,7 +17,7 @@ const AddBlog = () => {
   const [image, setImage] =useState(false)
   const [title, setTitle] =useState('')
   const [subTitle, setSubtitle] =useState('')
-  const [category, setCategory] =useState('startup')
+  const [category, setCategory] =useState('Startup')
   const [isPublished, setIsPublished] =useState(false)
 
 const onSubmitHandler = async (e) =>{
